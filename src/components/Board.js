@@ -1,8 +1,8 @@
 import { useState } from "react";
 import Block from "./Block";
 export default function Board(props) {
-  const boardSize = props.boardSize;
-  let count = 0;
+  const { boardSize, winnerLength } = props;
+  const [count, setCount] = useState(0);
   const numberBoardSize = parseInt(boardSize);
   const [checks, setChecks] = useState([[]]);
   const [historys, setHistorys] = useState([[]]);
@@ -20,69 +20,106 @@ export default function Board(props) {
     gridTemplateColumns: `repeat(${boardSize}, 1fr)`,
     gridGap: "2px",
     margin: "50px",
-    maxWidth: "250px",
+    maxWidth: "716px",
   };
 
-  const calculatorWinner = () => {
-    const size = boardSize;
-    let arr = [[]];
-    for (let rowIndex = 0; rowIndex < size; rowIndex++) {
-      if (blocks[rowIndex].every((cell) => cell === currentPlayer)) {
-        blocks[rowIndex].map((cell, index) => {
-          arr.push([rowIndex, index]);
-          return setWinners(arr);
-        });
-        return currentPlayer;
-      }
+  const calculatorWinner = (row, col) => {
+    // Kiểm tra hàng
+    let count = 1;
+    let i = col - 1;
+    while (i >= 0 && blocks[row][i] === blocks[row][col]) {
+      count++;
+      i--;
     }
-
-    // Check columns
-    for (let columnIndex = 0; columnIndex < size; columnIndex++) {
-      if (blocks.every((row) => row[columnIndex] === currentPlayer)) {
-        blocks[columnIndex].map((cell, index) => {
-          arr.push([index, columnIndex]);
-          return setWinners(arr);
-        });
-        return currentPlayer;
-      }
+    i = col + 1;
+    while (i < boardSize && blocks[row][i] === blocks[row][col]) {
+      count++;
+      i++;
     }
-
-    // Check diagonal from top left to bottom right
-    if (blocks.every((row, index) => row[index] === currentPlayer)) {
-      blocks.map((block, index) => {
-        arr.push([index, index]);
-        setWinners(arr);
-      });
-      return currentPlayer;
+    if (count >= winnerLength) {
+      console.log("Chiến thắng");
+      return blocks[row][col];
     }
-
-    // Check diagonal from top right to bottom left
-    if (blocks.every((row, index) => row[size - 1 - index] === currentPlayer)) {
-      blocks.map((block, index) => {
-        arr.push([index, size - 1 - index]);
-        setWinners(arr);
-      });
-      return currentPlayer;
+    //Kiểm tra cột
+    count = 1;
+    let j = row - 1;
+    while (j >= 0 && blocks[j][col] === blocks[row][col]) {
+      count++;
+      j--;
+    }
+    j = row + 1;
+    while (j < boardSize && blocks[j][col] === blocks[row][col]) {
+      count++;
+      j++;
+    }
+    if (count >= winnerLength) {
+      console.log("Chiến thắng");
+      return blocks[row][col];
+    }
+    // Kiểm tra đường chéo chính
+    count = 1;
+    i = col - 1;
+    j = row - 1;
+    while (i >= 0 && j >= 0 && blocks[j][i] === blocks[row][col]) {
+      count++;
+      i--;
+      j--;
+    }
+    i = col + 1;
+    j = row + 1;
+    while (
+      i < boardSize &&
+      j < boardSize &&
+      blocks[j][i] === blocks[row][col]
+    ) {
+      count++;
+      i++;
+      j++;
+    }
+    if (count >= winnerLength) {
+      console.log("Chiến thắng");
+      return blocks[row][col];
+    }
+    // Kiểm tra đường chéo phụ
+    count = 1;
+    i = col + 1;
+    j = row - 1;
+    while (i < boardSize && j >= 0 && blocks[j][i] === blocks[row][col]) {
+      count++;
+      i++;
+      j--;
+    }
+    i = col - 1;
+    j = row + 1;
+    while (i >= 0 && j < boardSize && blocks[j][i] === blocks[row][col]) {
+      count++;
+      i--;
+      j++;
+    }
+    if (count >= winnerLength) {
+      console.log("Chiến thắng");
+      return blocks[row][col];
     }
 
     return null;
   };
+
   const handleClick = (i, j) => {
     const newBlocks = [...blocks];
     newBlocks[i][j] = xIsNext ? "X" : "O";
-    const winner = calculatorWinner();
+    const winner = calculatorWinner(i, j);
     if (winner) {
-      setGameState(winner);
-    } else if (count === boardSize * boardSize) {
-      console.log("Tie");
+      setGameState(winner + " thắng");
+    } else if (count === boardSize * boardSize - 1) {
+      setGameState("Hòa");
       return;
     }
     setCurrentPlayer(currentPlayer === "X" ? "O" : "X");
-    setHistorys([...historys, [i, j]]);
+    setHistorys([...historys, [i, j, count]]);
     setBlocks(newBlocks);
     setXIsNext(!xIsNext);
     setChecks([i, j]);
-    count++;
+    setCount(count + 1);
   };
   console.log(gameState);
   const renderBlocks = (n) => {
@@ -94,7 +131,7 @@ export default function Board(props) {
         key++;
         genderBlocks.push(
           <Block
-            disabled={gameState ? true : false}
+            disabled={blocks[i][j] !== "" || gameState ? true : false}
             handleClick={() => handleClick(i, j)}
             value={blocks[i][j]}
             key={key}
@@ -110,26 +147,41 @@ export default function Board(props) {
     }
     return genderBlocks;
   };
-  console.log(winners);
+  const handleToggle = () => {
+    let arr = [...historys];
+    arr.reverse();
+    setHistorys(arr);
+  };
   return (
     <div className="game-wrapper">
       <div className="board" style={style}>
         {renderBlocks(boardSize)}
       </div>
       <div className="infor-game">
-        <div>{currentPlayer}</div>
-        <div>
-          <div>history</div>
-          <div>
+        {gameState ? (
+          <div>{gameState}</div>
+        ) : (
+          <div>Lượt tiếp theo: {currentPlayer}</div>
+        )}
+        <table>
+          <thead>
+            <tr>
+              <th>Lượt</th>
+              <th>hàng</th>
+              <th>cột</th>
+            </tr>
+          </thead>
+          <tbody>
             {historys.map((history, index) => (
-              <div key={index}>
-                <span>
-                  {history[0]} {history[1]}
-                </span>
-              </div>
+              <tr key={index}>
+                <td>{history[2]}</td>
+                <td>{history[0]}</td>
+                <td>{history[1]}</td>
+              </tr>
             ))}
-          </div>
-        </div>
+          </tbody>
+        </table>
+        <button onClick={handleToggle}>Toggle</button>
       </div>
     </div>
   );

@@ -3,10 +3,10 @@
   text-align: center;
 }
 .board{
-  width: 600px;
+  width: 100%;
 }
 .block {
-  width: 100%;
+  width: 70px;
   height: 70px;
 }
 .block:disabled{
@@ -24,4 +24,6 @@
 
 .game-wrapper{
   display: flex;
+  width: 100%;
+  
 }

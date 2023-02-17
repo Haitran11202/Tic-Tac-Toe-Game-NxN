@@ -3,61 +3,55 @@ import Board from "./components/Board";
 import { useState } from "react";
 export default function App() {
   const [tempBoardSize, setTempBoardSize] = useState(null);
-  const [boardSize, setBoardSize] = useState(null);
+  const [boardSize, setBoardSize] = useState(10);
   const [startGame, setStartGame] = useState(false);
-  const [player1, setPlayer1] = useState("");
-  const [player2, setPlayer2] = useState("");
-
+  const [winnerLength, setWinnerLength] = useState(5);
   function handleSubmit(e) {
     e.preventDefault();
     setBoardSize(tempBoardSize);
     setStartGame(true);
   }
+  console.log(typeof winnerLength);
   return (
     <div className="App">
       {startGame ? (
         <div className="game-board">
-          <Board boardSize={boardSize} />
+          <Board boardSize={boardSize} winnerLength={winnerLength} />
         </div>
       ) : (
         <p>Choose board size to start game</p>
       )}
-      <div>
-        <div>
-          <label>Player 1: </label>
-          <input
-            type="text"
-            id="p1"
-            name="p1"
-            placeholder="Enter Name"
-            onChange={(e) => setPlayer1(e.target.value)}
-          />
-        </div>
-        <div>
-          <label>Player 2: </label>
-          <input
-            type="text"
-            id="p2"
-            name="p2"
-            placeholder="Enter Name"
-            onChange={(e) => setPlayer2(e.target.value)}
-          />
-        </div>
-      </div>
       <br />
-      <div>
-        <label>Enter board size: </label>
-        <input
-          type="text"
-          placeholder="Enter a number"
-          id="board-size"
-          onChange={(e) => setTempBoardSize(e.target.value)}
-        />
-      </div>
-      <br />
-      <button type="submit" className="button" onClick={(e) => handleSubmit(e)}>
-        Start Game
-      </button>
+      {startGame ? (
+        ""
+      ) : (
+        <div>
+          <div>
+            <label>Nhập số lượng ô chiến thắng</label>
+            <input
+              value={winnerLength}
+              onChange={(event) => setWinnerLength(event.target.value)}
+            />
+          </div>
+          <div>
+            <label>Nhập kích cỡ bàn cờ </label>
+            <input
+              type="text"
+              placeholder="EntFer a number"
+              id="board-size"
+              onChange={(e) => setTempBoardSize(e.target.value)}
+            />
+          </div>
+          <br />
+          <button
+            type="submit"
+            className="button"
+            onClick={(e) => handleSubmit(e)}
+          >
+            Start Game
+          </button>
+        </div>
+      )}
     </div>
   );
 }
