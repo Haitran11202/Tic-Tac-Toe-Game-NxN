@@ -27,10 +27,12 @@ export default function Board(props) {
     // Kiểm tra hàng
     let count = 1;
     let i = col - 1;
+
     while (i >= 0 && blocks[row][i] === blocks[row][col]) {
       count++;
       i--;
     }
+    console.log(count, row, i);
     i = col + 1;
     while (i < boardSize && blocks[row][i] === blocks[row][col]) {
       count++;
